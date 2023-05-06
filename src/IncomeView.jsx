@@ -32,14 +32,6 @@ const IncomeView = () => {
         });
       } else if (bankFormat === "VCB") {
         if (+transaction["__EMPTY_1"]) {
-          value = transaction["SAO KÊ TÀI KHOẢN\nSTATEMENT OF ACCOUNT"];
-          real = parseFloat(value.replace(/,/g, ""));
-
-          if (value === "") {
-            value = transaction["__EMPTY_3"];
-            real = -1 * parseFloat(value.replace(/,/g, ""));
-          }
-
           const day_array = transaction["__EMPTY_2"].split("\n");
 
           const stringArray = day_array[0].split("/");
@@ -48,6 +40,14 @@ const IncomeView = () => {
 
           if (date1 !== "" && format_date !== undefined) {
             if (format_date === date1 || format_date === date2) {
+              value = transaction["SAO KÊ TÀI KHOẢN\nSTATEMENT OF ACCOUNT"];
+              real = parseFloat(value.replace(/,/g, ""));
+
+              if (value === "") {
+                value = transaction["__EMPTY_3"];
+                real = -1 * parseFloat(value.replace(/,/g, ""));
+              }
+
               dataChart.push({
                 id: transaction["__EMPTY_1"],
                 date: day_array[0],
@@ -110,6 +110,7 @@ const IncomeView = () => {
       }
       // Count total gain money and output to UI
       if (value !== undefined) {
+        // console.log(real);
         if (real > 0) income += real;
         else spend += real;
       }
