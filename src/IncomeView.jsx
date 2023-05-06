@@ -119,7 +119,7 @@ const IncomeView = () => {
 
   const handleFileChange = ($event) => {
     setCurrentFile($event.target.files);
-    handleImport;
+    handleImport();
   };
 
   const handleImport = () => {
