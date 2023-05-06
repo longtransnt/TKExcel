@@ -248,10 +248,10 @@ const IncomeView = () => {
               <table className="table">
                 <thead>
                   <tr>
-                    <th scope="col">Id</th>
-                    <th scope="col">Date</th>
-                    <th scope="col">Info</th>
-                    <th scope="col">Amount</th>
+                    <th scope="col">STT</th>
+                    <th scope="col">Ngày</th>
+                    <th scope="col">Thông Tin</th>
+                    <th scope="col">Số Tiền</th>
                   </tr>
                 </thead>
                 <tbody>
