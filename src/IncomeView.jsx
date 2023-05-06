@@ -150,7 +150,7 @@ const IncomeView = () => {
     <>
       <Container fluid>
         <Row>
-          <Col md="3">
+          <Col md="4">
             <label>Chọn format xlsx từ ngân hàng:</label>
             <Form.Control
               as="select"
