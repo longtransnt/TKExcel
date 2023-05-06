@@ -238,7 +238,7 @@ const IncomeView = () => {
         </Row>
         <Row>
           <div className="row">
-            <div className="col-sm-6 offset-2">
+            <div className="col-sm-12 ">
               <table className="table">
                 <thead>
                   <tr>
