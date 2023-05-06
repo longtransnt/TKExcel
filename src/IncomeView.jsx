@@ -41,25 +41,31 @@ const IncomeView = () => {
           }
 
           const day_array = transaction["__EMPTY_2"].split("\n");
+
           const stringArray = day_array[0].split("/");
           const format_date =
-            stringArray[0] + "/" + stringArray[1] + "/" + stringArray[2];
-          dataChart.push({
-            id: transaction["__EMPTY_1"],
-            date: format_date,
-            content: transaction["__EMPTY_5"],
-            value: value,
-            real_value: real,
-          });
+            stringArray[2] + "-" + stringArray[1] + "-" + stringArray[0];
 
-          if (real > 0) {
-            dataChart2.push({
-              id: transaction["__EMPTY_1"],
-              date: format_date,
-              content: transaction["__EMPTY_5"],
-              value: value,
-              real_value: real,
-            });
+          if (date1 !== "" && format_date !== undefined) {
+            if (format_date === date1 || format_date === date2) {
+              dataChart.push({
+                id: transaction["__EMPTY_1"],
+                date: day_array[0],
+                content: transaction["__EMPTY_5"],
+                value: value,
+                real_value: real,
+              });
+
+              if (real > 0) {
+                dataChart2.push({
+                  id: transaction["__EMPTY_1"],
+                  date: day_array[0],
+                  content: transaction["__EMPTY_5"],
+                  value: value,
+                  real_value: real,
+                });
+              }
+            }
           }
         }
       } else if (bankFormat === "SCB") {
@@ -119,7 +125,6 @@ const IncomeView = () => {
 
   const handleFileChange = ($event) => {
     setCurrentFile($event.target.files);
-    handleImport();
   };
 
   const handleImport = () => {
