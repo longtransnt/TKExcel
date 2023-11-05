@@ -17,29 +17,26 @@ const IncomeView = () => {
     let income = 0;
     let spend = 0;
 
+    const timestamp_start = new Date(date1).getTime();
+    if (date2 === "") setDate2(date1);
+    const timestamp_end = new Date(date2).getTime();
+
     transactions.forEach(function (transaction) {
       let value = "";
       let real = 0;
-      if (bankFormat === "VTB") {
-        value = transaction["1900-55-88-68\ncontact@vietinbank.vn"];
-        real = parseFloat(value.replace(/,/g, ""));
-        dataChart.push({
-          id: transaction["__EMPTY"],
-          date: transaction["__EMPTY_1"],
-          content: transaction["__EMPTY_2"],
-          value: value,
-          real_value: real,
-        });
-      } else if (bankFormat === "VCB") {
+      if (bankFormat === "VCB") {
         if (+transaction["__EMPTY_1"]) {
+          // Get date from __EMPTY_2 string
           const day_array = transaction["__EMPTY_2"].split("\n");
+          const partial_array = day_array[0].split("/");
+          const ddmmyyyy_date =
+            partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
 
-          const stringArray = day_array[0].split("/");
-          const format_date =
-            stringArray[2] + "-" + stringArray[1] + "-" + stringArray[0];
-
-          if (date1 !== "" && format_date !== undefined) {
-            if (format_date === date1 || format_date === date2) {
+          // Convert timezone before compare
+          const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
+          // Only count transactions within specified timezone
+          if (date1 !== "" && ddmmyyyy_date !== undefined) {
+            if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
               value = transaction["SAO KÊ TÀI KHOẢN\nSTATEMENT OF ACCOUNT"];
               real = parseFloat(value.replace(/,/g, ""));
 
@@ -71,11 +68,13 @@ const IncomeView = () => {
       } else if (bankFormat === "SCB") {
         // Get current transaction date
         let date_string = transaction["__EMPTY_4"].split(" ");
-        let stringArray = date_string[0].split("-");
-        let format_date =
-          stringArray[2] + "-" + stringArray[1] + "-" + stringArray[0];
-        if (date1 !== "" && format_date !== undefined) {
-          if (format_date === date1 || format_date === date2) {
+        let partial_array = date_string[0].split("-");
+        const ddmmyyyy_date =
+          partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
+        // Convert timezone before compare
+        const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
+        if (date1 !== "" && ddmmyyyy_date !== undefined) {
+          if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
             // Get value and real value
             value = transaction["__EMPTY_18"] + "";
             real = parseFloat(value.replaceAll(".", ""));
@@ -173,7 +172,7 @@ const IncomeView = () => {
             <br />
           </Col>
           <Col className="pr-1" md="4">
-            <label>Ngày Giao Dịch</label>
+            <label>Ngày Đầu</label>
             <Form.Control
               type="date"
               onChange={(e) => {
@@ -183,7 +182,7 @@ const IncomeView = () => {
             />
           </Col>
           <Col className="pr-1" md="4">
-            <label>Chọn Thêm Ngày</label>
+            <label>Ngày Cuối</label>
             <Form.Control
               type="date"
               onChange={(e) => {
