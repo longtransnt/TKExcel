@@ -10,15 +10,20 @@ const IncomeView = () => {
   const [currentFile, setCurrentFile] = useState(null);
   const [income, setIncome] = useState(0);
   const [spending, setSpending] = useState(0);
+  const OFFSET_TIMEZONE = 7 * 3600000;
+
+  const formatDateString = (dateString, separator = "-") => {
+    const partialArray = dateString.split(separator);
+    return `${partialArray[1]}/${partialArray[0]}/${partialArray[2]}`;
+  };
 
   const formatTransaction = (transactions) => {
     let dataChart = [];
     let dataChart2 = [];
     let income = 0;
     let spend = 0;
-
-    const timestamp_start = new Date(date1).getTime();
     if (date2 === "") setDate2(date1);
+    const timestamp_start = new Date(date1).getTime();
     const timestamp_end = new Date(date2).getTime();
 
     transactions.forEach(function (transaction) {
@@ -28,12 +33,9 @@ const IncomeView = () => {
         if (+transaction["__EMPTY_1"]) {
           // Get date from __EMPTY_2 string
           const day_array = transaction["__EMPTY_2"].split("\n");
-          const partial_array = day_array[0].split("/");
-          const ddmmyyyy_date =
-            partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
-
+          const ddmmyyyy_date = formatDateString(day_array[0], "/");
           // Convert timezone before compare
-          const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
+          const timestamp = new Date(ddmmyyyy_date).getTime() + OFFSET_TIMEZONE;
           // Only count transactions within specified timezone
           if (date1 !== "" && ddmmyyyy_date !== undefined) {
             if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
@@ -45,7 +47,6 @@ const IncomeView = () => {
                 real = -1 * parseFloat(value.replace(/,/g, ""));
               }
               value = (real / 1000).toFixed(0);
-              console.log(value);
 
               dataChart.push({
                 id: transaction["__EMPTY_1"],
@@ -70,11 +71,9 @@ const IncomeView = () => {
       } else if (bankFormat === "SCB") {
         // Get current transaction date
         let date_string = transaction["__EMPTY_4"].split(" ");
-        let partial_array = date_string[0].split("-");
-        const ddmmyyyy_date =
-          partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
+        const ddmmyyyy_date = formatDateString(date_string[0], "-");
         // Convert timezone before compare
-        const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
+        const timestamp = new Date(ddmmyyyy_date).getTime() + OFFSET_TIMEZONE;
         if (date1 !== "" && ddmmyyyy_date !== undefined) {
           if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
             // Get value and real value
@@ -87,7 +86,6 @@ const IncomeView = () => {
             }
             let date_string2 = date_string[0].replaceAll("-", "/");
             value = (real / 1000).toFixed(0);
-            console.log(value);
 
             // Push data in data frame
             dataChart.push({
@@ -171,7 +169,6 @@ const IncomeView = () => {
               <option defaultValue=""></option>
               <option value="VCB">Vietcombank</option>
               <option value="SCB">Sacombank</option>
-              {/* <option value="VTB">Vietinbank</option> */}
             </Form.Control>
             <br />
           </Col>
