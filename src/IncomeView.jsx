@@ -44,6 +44,8 @@ const IncomeView = () => {
                 value = transaction["__EMPTY_3"];
                 real = -1 * parseFloat(value.replace(/,/g, ""));
               }
+              value = (real / 1000).toFixed(0);
+              console.log(value);
 
               dataChart.push({
                 id: transaction["__EMPTY_1"],
@@ -84,6 +86,8 @@ const IncomeView = () => {
               real = -1 * parseFloat(value.replaceAll(".", ""));
             }
             let date_string2 = date_string[0].replaceAll("-", "/");
+            value = (real / 1000).toFixed(0);
+            console.log(value);
 
             // Push data in data frame
             dataChart.push({
@@ -264,7 +268,7 @@ const IncomeView = () => {
                         <td>
                           {transaction.real_value < 0 ? (
                             <span className="badge bg-danger text-white">
-                              - {transaction.value}
+                              {transaction.value}
                             </span>
                           ) : (
                             <span className="badge bg-info text-white">
