@@ -1,126 +1,53 @@
 import { useState } from "react";
 import { read, utils } from "xlsx";
+import * as XLSX from "xlsx";
+
 import { Form, Container, Row, Col } from "react-bootstrap";
 
 const IncomeView = () => {
+  // LEGACY BLOAT
+  const [income, setIncome] = useState(0);
+  const [spending, setSpending] = useState(0);
+  const [data, setData] = useState([]);
   const [bankFormat, setBankFormat] = useState("");
   const [date1, setDate1] = useState("");
   const [date2, setDate2] = useState("");
-  const [data, setData] = useState([]);
   const [currentFile, setCurrentFile] = useState(null);
-  const [income, setIncome] = useState(0);
-  const [spending, setSpending] = useState(0);
+  const [deliveryList, setDeliveryList] = useState([]);
+  const now = new Date();
+  const timestamp = now.toLocaleString("vi-VN");
 
   const formatTransaction = (transactions) => {
-    let dataChart = [];
-    let dataChart2 = [];
-    let income = 0;
-    let spend = 0;
-
-    const timestamp_start = new Date(date1).getTime();
-    if (date2 === "") setDate2(date1);
-    const timestamp_end = new Date(date2).getTime();
-
     transactions.forEach(function (transaction) {
-      let value = "";
-      let real = 0;
-      if (bankFormat === "VCB") {
-        if (+transaction["__EMPTY_1"]) {
-          // Get date from __EMPTY_2 string
-          const day_array = transaction["__EMPTY_2"].split("\n");
-          const partial_array = day_array[0].split("/");
-          const ddmmyyyy_date =
-            partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
-
-          // Convert timezone before compare
-          const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
-          // Only count transactions within specified timezone
-          if (date1 !== "" && ddmmyyyy_date !== undefined) {
-            if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
-              value = transaction["SAO KÊ TÀI KHOẢN\nSTATEMENT OF ACCOUNT"];
-              real = parseFloat(value.replace(/,/g, ""));
-
-              if (value === "") {
-                value = transaction["__EMPTY_3"];
-                real = -1 * parseFloat(value.replace(/,/g, ""));
-              }
-
-              dataChart.push({
-                id: transaction["__EMPTY_1"],
-                date: day_array[0],
-                content: transaction["__EMPTY_5"],
-                value: value,
-                real_value: real,
-              });
-
-              if (real > 0) {
-                dataChart2.push({
-                  id: transaction["__EMPTY_1"],
-                  date: day_array[0],
-                  content: transaction["__EMPTY_5"],
-                  value: value,
-                  real_value: real,
-                });
-              }
-            }
-          }
-        }
-      } else if (bankFormat === "SCB") {
-        // Get current transaction date
-        let date_string = transaction["__EMPTY_4"].split(" ");
-        let partial_array = date_string[0].split("-");
-        const ddmmyyyy_date =
-          partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
-        // Convert timezone before compare
-        const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
-        if (date1 !== "" && ddmmyyyy_date !== undefined) {
-          if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
-            // Get value and real value
-            value = transaction["__EMPTY_18"] + "";
-            real = parseFloat(value.replaceAll(".", ""));
-            // If real value is error, check the negative error
-            if (value === "undefined") {
-              value = transaction["__EMPTY_16"] + "";
-              real = -1 * parseFloat(value.replaceAll(".", ""));
-            }
-            let date_string2 = date_string[0].replaceAll("-", "/");
-
-            // Push data in data frame
-            dataChart.push({
-              id: transaction["__EMPTY_1"],
-              date: date_string2,
-              content: transaction["__EMPTY_12"],
-              value: value,
-              real_value: real,
-            });
-
-            if (real > 0) {
-              // Push data export if real value is larger than 0
-              dataChart2.push({
-                id: transaction["__EMPTY_1"],
-                date: date_string2,
-                content: transaction["__EMPTY_12"],
-                value: value,
-                real_value: real,
-              });
-            }
-          }
-        }
-      }
-      // Count total gain money and output to UI
-      if (value !== undefined) {
-        // console.log(real);
-        if (real > 0) income += real;
-        else spend += real;
-      }
+      var delivery = transaction["Mã ĐH"].split(".");
+      var customer = transaction["Thông tin khách hàng"].split("-");
+      const customer_name = customer[0];
+      const address = customer[1];
+      const phone = transaction["Số điện thoại khách hàng"];
+      const money_cod = transaction["Giá trị hàng hóa"];
+      const delivery_code = delivery[delivery.length - 1];
+      const phone2 = phone;
+      const delivery_code2 = delivery_code;
+      const url = "https://i.ghtk.vn/" + delivery_code;
+      // console.log({ delivery_code, phone, customer_name, address, money_cod });
+      deliveryList.push({
+        phone,
+        customer_name,
+        delivery_code,
+        phone2,
+        money_cod,
+        address,
+        delivery_code2,
+        url,
+      });
     });
-    dataChart2.push({
-      value: "Tổng Tiền",
-      real_value: income,
-    });
-    setData(dataChart);
-    setIncome(income);
-    setSpending(spend);
+    // console.log(deliveryList);
+    // console.log(timestamp);
+
+    const worksheet = XLSX.utils.json_to_sheet(deliveryList);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "GHTK");
+    XLSX.writeFile(workbook, "GHTK_Ship_" + timestamp + ".xlsx");
   };
 
   const handleFileChange = ($event) => {
@@ -149,6 +76,7 @@ const IncomeView = () => {
       };
       reader.readAsArrayBuffer(file);
     }
+    setDeliveryList([]);
   };
 
   return (
@@ -156,7 +84,7 @@ const IncomeView = () => {
       <Container fluid>
         <Row>
           <Col md="4">
-            <label>Chọn format xlsx từ ngân hàng:</label>
+            <label>Chọn format xlsx từ ngân hàng: </label>
             <Form.Control
               as="select"
               value={bankFormat}
@@ -167,7 +95,6 @@ const IncomeView = () => {
               <option defaultValue=""></option>
               <option value="VCB">Vietcombank</option>
               <option value="SCB">Sacombank</option>
-              {/* <option value="VTB">Vietinbank</option> */}
             </Form.Control>
             <br />
           </Col>
