@@ -11,7 +11,7 @@ const IncomeView = () => {
   const [searchTxt, setSearchTxt] = useState("");
   const [add, setAdd] = useState(0);
   const [expense, setExpense] = useState(0);
-  const [bankFormat, setBankFormat] = useState("");
+  const [bankTemp, setBankFormat] = useState("");
   const [transacType, setTransacType] = useState("");
   const [currentFile, setCurrentFile] = useState(null);
 
@@ -29,7 +29,7 @@ const IncomeView = () => {
     transactions.forEach(function (transaction) {
       let value = "";
       let real = 0;
-      if (bankFormat === "VCB") {
+      if (bankTemp === "VCB") {
         if (+transaction["__EMPTY_1"]) {
           // Get date from __EMPTY_2 string
           const day_array = transaction["__EMPTY_2"].split("\n");
@@ -70,7 +70,7 @@ const IncomeView = () => {
             }
           }
         }
-      } else if (bankFormat === "SCB") {
+      } else if (bankTemp === "SCB") {
         // Get current transaction date
         let date_string = transaction["__EMPTY_4"].split(" ");
         let partial_array = date_string[0].split("-");
@@ -141,11 +141,11 @@ const IncomeView = () => {
 
         if (sheets.length) {
           const rows = utils.sheet_to_json(wb.Sheets[sheets[0]]);
-          if (bankFormat === "VCB") {
+          if (bankTemp === "VCB") {
             rows.splice(0, 10);
-          } else if (bankFormat === "VTB") {
+          } else if (bankTemp === "VTB") {
             rows.splice(0, 3);
-          } else if (bankFormat === "SCB") {
+          } else if (bankTemp === "SCB") {
             rows.splice(0, 22);
           }
           formatTransaction(rows);
@@ -171,7 +171,7 @@ const IncomeView = () => {
             <label>Chọn format xlsx từ ngân hàng:</label>
             <Form.Control
               as="select"
-              value={bankFormat}
+              value={bankTemp}
               onChange={(e) => {
                 setBankFormat(e.target.value);
               }}
@@ -285,17 +285,10 @@ const IncomeView = () => {
           <div className="row">
             <div className="col-sm-12 ">
               <table className="table">
-                <thead>
-                  <tr>
-                    <th scope="col">STT</th>
-                    <th scope="col">Ngày</th>
-                    <th scope="col">Thông Tin</th>
-                    <th scope="col">Số Tiền</th>
-                  </tr>
-                </thead>
                 <FilteredList
                   data={data}
                   input={searchTxt}
+                  bankTemp={bankTemp}
                   updateExpense={updateExpense}
                   updateAdd={updateAdd}
                   type={transacType}
