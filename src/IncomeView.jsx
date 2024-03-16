@@ -9,18 +9,22 @@ const IncomeView = () => {
   const [date1, setDate1] = useState("");
   const [date2, setDate2] = useState("");
   const [searchTxt, setSearchTxt] = useState("");
-  const [add, setAdd] = useState(0);
-  const [expense, setExpense] = useState(0);
-  const [bankFormat, setBankFormat] = useState("");
   const [transacType, setTransacType] = useState("");
-  const [currentFile, setCurrentFile] = useState(null);
+
+  const [add, setAdd] = useState(0);
+  const [exp, setExp] = useState(0);
+
+  const [bankTemp, setBankTemp] = useState("");
+  const [bankTemp2, setBankTemp2] = useState("");
+  const [file1, setFile1] = useState(null);
+  const [file2, setFile2] = useState(null);
 
   // Function to handle transactions data from xlsx file
   const formatTransaction = (transactions) => {
-    let expenseList = [];
+    let expList = [];
     let incomeList = [];
     let income = 0;
-    let expense = 0;
+    let exp = 0;
 
     const timestamp_start = new Date(date1).getTime();
     if (date2 === "") setDate2(date1);
@@ -29,7 +33,7 @@ const IncomeView = () => {
     transactions.forEach(function (transaction) {
       let value = "";
       let real = 0;
-      if (bankFormat === "VCB") {
+      if (bankTemp === "VCB") {
         if (+transaction["__EMPTY_1"]) {
           // Get date from __EMPTY_2 string
           const day_array = transaction["__EMPTY_2"].split("\n");
@@ -50,7 +54,7 @@ const IncomeView = () => {
                 real = -1 * parseFloat(value.replace(/,/g, ""));
               }
 
-              expenseList.push({
+              expList.push({
                 id: transaction["__EMPTY_1"],
                 date: day_array[0],
                 content: transaction["__EMPTY_5"],
@@ -70,7 +74,7 @@ const IncomeView = () => {
             }
           }
         }
-      } else if (bankFormat === "SCB") {
+      } else if (bankTemp === "SCB") {
         // Get current transaction date
         let date_string = transaction["__EMPTY_4"].split(" ");
         let partial_array = date_string[0].split("-");
@@ -91,7 +95,7 @@ const IncomeView = () => {
             let date_string2 = date_string[0].replaceAll("-", "/");
 
             // Push data in data frame
-            expenseList.push({
+            expList.push({
               id: transaction["__EMPTY_1"],
               date: date_string2,
               content: transaction["__EMPTY_12"],
@@ -115,44 +119,58 @@ const IncomeView = () => {
       // Count total gain money and output to UI
       if (value !== undefined) {
         if (real > 0) income += real;
-        else expense += real;
+        else exp += real;
       }
     });
     incomeList.push({
       value: "Tổng Tiền",
       real_value: income,
     });
-    setData(expenseList);
+
+    setData(expList);
     setAdd(income);
-    setExpense(expense);
+    setExp(exp);
   };
 
   const handleFileChange = ($event) => {
-    setCurrentFile($event.target.files);
+    if ($event.target.name === "file1") {
+      setFile1($event.target.files);
+    }
+
+    if ($event.target.name === "file2") {
+      setFile2($event.target.files);
+    }
   };
 
-  const handleImport = () => {
-    if (currentFile.length) {
-      const file = currentFile[0];
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const wb = read(event.target.result);
-        const sheets = wb.SheetNames;
-
-        if (sheets.length) {
-          const rows = utils.sheet_to_json(wb.Sheets[sheets[0]]);
-          if (bankFormat === "VCB") {
-            rows.splice(0, 10);
-          } else if (bankFormat === "VTB") {
-            rows.splice(0, 3);
-          } else if (bankFormat === "SCB") {
-            rows.splice(0, 22);
-          }
-          formatTransaction(rows);
-        }
-      };
-      reader.readAsArrayBuffer(file);
+  const handleFile = () => {
+    if (file1.length) {
+      handleImport(file1);
     }
+    if (file2.length) {
+      handleImport(file2);
+    }
+  };
+
+  const handleImport = (currentFile) => {
+    const file = currentFile[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const wb = read(event.target.result);
+      const sheets = wb.SheetNames;
+
+      if (sheets.length) {
+        const rows = utils.sheet_to_json(wb.Sheets[sheets[0]]);
+        if (bankTemp === "VCB") {
+          rows.splice(0, 10);
+        } else if (bankTemp === "VTB") {
+          rows.splice(0, 3);
+        } else if (bankTemp === "SCB") {
+          rows.splice(0, 22);
+        }
+        formatTransaction(rows);
+      }
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   const updateAdd = (newAdd) => {
@@ -160,20 +178,35 @@ const IncomeView = () => {
   };
 
   const updateExpense = (newExp) => {
-    setExpense(newExp);
+    setExp(newExp);
   };
 
   return (
     <>
       <Container fluid>
         <Row>
+          <Col className="mt-5" md="3">
+            <div className="input-group">
+              <div className="custom-file">
+                <input
+                  type="file"
+                  name="file1"
+                  className="custom-file-input"
+                  id="inputGroupFile"
+                  required
+                  onChange={handleFileChange}
+                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                />
+              </div>
+            </div>
+          </Col>
           <Col md="3">
             <label>Chọn format xlsx từ ngân hàng:</label>
             <Form.Control
               as="select"
-              value={bankFormat}
+              value={bankTemp}
               onChange={(e) => {
-                setBankFormat(e.target.value);
+                setBankTemp(e.target.value);
               }}
             >
               <option defaultValue=""></option>
@@ -203,17 +236,7 @@ const IncomeView = () => {
               value={date2}
             />
           </Col>
-          <Col className="pr-1" md="3">
-            <label>Tìm Theo Nội Dung</label>
-            <Form.Control
-              type="text"
-              onChange={(e) => {
-                var lowerCase = e.target.value.toLowerCase();
-                setSearchTxt(lowerCase);
-              }}
-              value={searchTxt}
-            />
-          </Col>
+
           <Col md="2">
             <label>Loại giao dịch</label>
             <Form.Control
@@ -231,14 +254,13 @@ const IncomeView = () => {
             <br />
           </Col>
         </Row>
-
         <Row>
-          <Col className="pr-1" md="3">
+          <Col className="mt-5" md="3">
             <div className="input-group">
               <div className="custom-file">
                 <input
                   type="file"
-                  name="file"
+                  name="file2"
                   className="custom-file-input"
                   id="inputGroupFile"
                   required
@@ -248,6 +270,36 @@ const IncomeView = () => {
               </div>
             </div>
           </Col>
+          <Col md="3">
+            <label>Chọn format xlsx từ ngân hàng:</label>
+            <Form.Control
+              as="select"
+              value={bankTemp}
+              onChange={(e) => {
+                setBankTemp(e.target.value);
+              }}
+            >
+              <option defaultValue=""></option>
+              <option value="VCB">Vietcombank</option>
+              <option value="SCB">Sacombank</option>
+              {/* <option value="VTB">Vietinbank</option> */}
+            </Form.Control>
+            <br />
+          </Col>
+          <Col className="pr-1" md="5">
+            <label>Tìm Theo Nội Dung</label>
+            <Form.Control
+              type="text"
+              onChange={(e) => {
+                var lowerCase = e.target.value.toLowerCase();
+                setSearchTxt(lowerCase);
+              }}
+              value={searchTxt}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col md="2"></Col>
           <Col className="pr-1" md="3">
             <div>Tổng Số Tiền Thu Được:</div>
             <span
@@ -267,16 +319,26 @@ const IncomeView = () => {
                 fontWeight: "bold",
               }}
             >
-              {Number(expense).toLocaleString("vi-VN")} VND
+              {Number(exp).toLocaleString("vi-VN")} VND
             </span>
           </Col>
-          <Col className="pr-1" md="3">
+          <Col className="" md="2">
+            <span>
+              <button
+                onClick={handleFile}
+                className="btn btn-primary float-right"
+              >
+                Tải lại <i className="fa fa-refresh"></i>
+              </button>
+            </span>
+          </Col>
+          <Col className="" md="2">
             <span>
               <button
                 onClick={handleImport}
                 className="btn btn-primary float-right"
               >
-                Tải lại <i className="fa fa-refresh"></i>
+                Tải về <i className="fa fa-refresh"></i>
               </button>
             </span>
           </Col>
