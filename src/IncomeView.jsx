@@ -1,21 +1,26 @@
 import { useState } from "react";
 import { read, utils } from "xlsx";
 import { Form, Container, Row, Col } from "react-bootstrap";
+import FilteredList from "./FilteredList";
 
 const IncomeView = () => {
-  const [bankFormat, setBankFormat] = useState("");
+  // Parameters to display data to frontend
+  const [data, setData] = useState([]);
   const [date1, setDate1] = useState("");
   const [date2, setDate2] = useState("");
-  const [data, setData] = useState([]);
+  const [searchTxt, setSearchTxt] = useState("");
+  const [add, setAdd] = useState(0);
+  const [expense, setExpense] = useState(0);
+  const [bankFormat, setBankFormat] = useState("");
+  const [transacType, setTransacType] = useState("");
   const [currentFile, setCurrentFile] = useState(null);
-  const [income, setIncome] = useState(0);
-  const [spending, setSpending] = useState(0);
 
+  // Function to handle transactions data from xlsx file
   const formatTransaction = (transactions) => {
-    let dataChart = [];
-    let dataChart2 = [];
+    let expenseList = [];
+    let incomeList = [];
     let income = 0;
-    let spend = 0;
+    let expense = 0;
 
     const timestamp_start = new Date(date1).getTime();
     if (date2 === "") setDate2(date1);
@@ -45,7 +50,7 @@ const IncomeView = () => {
                 real = -1 * parseFloat(value.replace(/,/g, ""));
               }
 
-              dataChart.push({
+              expenseList.push({
                 id: transaction["__EMPTY_1"],
                 date: day_array[0],
                 content: transaction["__EMPTY_5"],
@@ -54,7 +59,7 @@ const IncomeView = () => {
               });
 
               if (real > 0) {
-                dataChart2.push({
+                incomeList.push({
                   id: transaction["__EMPTY_1"],
                   date: day_array[0],
                   content: transaction["__EMPTY_5"],
@@ -86,7 +91,7 @@ const IncomeView = () => {
             let date_string2 = date_string[0].replaceAll("-", "/");
 
             // Push data in data frame
-            dataChart.push({
+            expenseList.push({
               id: transaction["__EMPTY_1"],
               date: date_string2,
               content: transaction["__EMPTY_12"],
@@ -96,7 +101,7 @@ const IncomeView = () => {
 
             if (real > 0) {
               // Push data export if real value is larger than 0
-              dataChart2.push({
+              incomeList.push({
                 id: transaction["__EMPTY_1"],
                 date: date_string2,
                 content: transaction["__EMPTY_12"],
@@ -109,18 +114,17 @@ const IncomeView = () => {
       }
       // Count total gain money and output to UI
       if (value !== undefined) {
-        // console.log(real);
         if (real > 0) income += real;
-        else spend += real;
+        else expense += real;
       }
     });
-    dataChart2.push({
+    incomeList.push({
       value: "Tổng Tiền",
       real_value: income,
     });
-    setData(dataChart);
-    setIncome(income);
-    setSpending(spend);
+    setData(expenseList);
+    setAdd(income);
+    setExpense(expense);
   };
 
   const handleFileChange = ($event) => {
@@ -151,11 +155,19 @@ const IncomeView = () => {
     }
   };
 
+  const updateAdd = (newAdd) => {
+    setAdd(newAdd);
+  };
+
+  const updateExpense = (newExp) => {
+    setExpense(newExp);
+  };
+
   return (
     <>
       <Container fluid>
         <Row>
-          <Col md="4">
+          <Col md="3">
             <label>Chọn format xlsx từ ngân hàng:</label>
             <Form.Control
               as="select"
@@ -171,7 +183,7 @@ const IncomeView = () => {
             </Form.Control>
             <br />
           </Col>
-          <Col className="pr-1" md="4">
+          <Col className="pr-1" md="2">
             <label>Ngày Đầu</label>
             <Form.Control
               type="date"
@@ -181,7 +193,7 @@ const IncomeView = () => {
               value={date1}
             />
           </Col>
-          <Col className="pr-1" md="4">
+          <Col className="pr-1" md="2">
             <label>Ngày Cuối</label>
             <Form.Control
               type="date"
@@ -191,6 +203,36 @@ const IncomeView = () => {
               value={date2}
             />
           </Col>
+          <Col className="pr-1" md="3">
+            <label>Tìm Theo Nội Dung</label>
+            <Form.Control
+              type="text"
+              onChange={(e) => {
+                var lowerCase = e.target.value.toLowerCase();
+                setSearchTxt(lowerCase);
+              }}
+              value={searchTxt}
+            />
+          </Col>
+          <Col md="2">
+            <label>Loại giao dịch</label>
+            <Form.Control
+              as="select"
+              value={transacType}
+              onChange={(e) => {
+                setTransacType(e.target.value);
+              }}
+            >
+              <option defaultValue=""></option>
+              <option value="Add">Tiền vào</option>
+              <option value="Exp">Tiền ra</option>
+              {/* <option value="VTB">Vietinbank</option> */}
+            </Form.Control>
+            <br />
+          </Col>
+        </Row>
+
+        <Row>
           <Col className="pr-1" md="3">
             <div className="input-group">
               <div className="custom-file">
@@ -206,8 +248,7 @@ const IncomeView = () => {
               </div>
             </div>
           </Col>
-
-          <Col>
+          <Col className="pr-1" md="3">
             <div>Tổng Số Tiền Thu Được:</div>
             <span
               style={{
@@ -215,11 +256,10 @@ const IncomeView = () => {
                 fontWeight: "bold",
               }}
             >
-              {Number(income).toLocaleString("vi-VN")} VND
+              {Number(add).toLocaleString("vi-VN")} VND
             </span>
           </Col>
-
-          <Col>
+          <Col className="pr-1" md="3">
             <div>Tổng Số Tiền Chi Ra:</div>
             <span
               style={{
@@ -227,10 +267,10 @@ const IncomeView = () => {
                 fontWeight: "bold",
               }}
             >
-              {Number(spending).toLocaleString("vi-VN")} VND
+              {Number(expense).toLocaleString("vi-VN")} VND
             </span>
           </Col>
-          <Col>
+          <Col className="pr-1" md="3">
             <span>
               <button
                 onClick={handleImport}
@@ -253,35 +293,13 @@ const IncomeView = () => {
                     <th scope="col">Số Tiền</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {data.length ? (
-                    data.map((transaction, index) => (
-                      <tr key={index}>
-                        <th scope="row">{index + 1}</th>
-                        <td>{transaction.date}</td>
-                        <td>{transaction.content}</td>
-
-                        <td>
-                          {transaction.real_value < 0 ? (
-                            <span className="badge bg-danger text-white">
-                              - {transaction.value}
-                            </span>
-                          ) : (
-                            <span className="badge bg-info text-white">
-                              {transaction.value}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="text-center">
-                        Chưa có dữ liệu.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
+                <FilteredList
+                  data={data}
+                  input={searchTxt}
+                  updateExpense={updateExpense}
+                  updateAdd={updateAdd}
+                  type={transacType}
+                />
               </table>
             </div>
           </div>
