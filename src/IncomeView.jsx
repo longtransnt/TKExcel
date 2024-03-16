@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { read, utils } from "xlsx";
+import * as XLSX from "xlsx";
 import { Form, Container, Row, Col } from "react-bootstrap";
 import FilteredList from "./FilteredList";
 
@@ -14,6 +15,7 @@ const IncomeView = () => {
   const [bankTemp, setBankFormat] = useState("");
   const [transacType, setTransacType] = useState("");
   const [currentFile, setCurrentFile] = useState(null);
+  const [deliveryList, setDeliveryList] = useState([]);
 
   // Function to handle transactions data from xlsx file
   const formatTransaction = (transactions) => {
@@ -149,6 +151,11 @@ const IncomeView = () => {
             rows.splice(0, 22);
           }
           formatTransaction(rows);
+
+          if (bankTemp === "GHTK") {
+            rows.splice(0, 5);
+            formatDelivery(rows);
+          }
         }
       };
       reader.readAsArrayBuffer(file);
@@ -161,6 +168,38 @@ const IncomeView = () => {
 
   const updateExpense = (newExp) => {
     setExpense(newExp);
+  };
+
+  const formatDelivery = (transactions) => {
+    const now = new Date();
+    const timestamp = now.toLocaleString("vi-VN");
+    transactions.forEach(function (transaction) {
+      var delivery = transaction["__EMPTY_1"].split(".");
+      var customer = transaction["__EMPTY_5"].split("-");
+      const customer_name = customer[0];
+      const address = customer[1];
+      const phone = transaction["__EMPTY_24"];
+      const money_cod = transaction["__EMPTY_8"];
+      const delivery_code = delivery[delivery.length - 1];
+      const phone2 = phone;
+      const delivery_code2 = delivery_code;
+      const url = "https://i.ghtk.vn/" + delivery_code;
+      deliveryList.push({
+        phone,
+        customer_name,
+        delivery_code,
+        phone2,
+        money_cod,
+        address,
+        delivery_code2,
+        url,
+      });
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(deliveryList);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "GHTK");
+    XLSX.writeFile(workbook, "GHTK_Ship_" + timestamp + ".xlsx");
   };
 
   return (
@@ -179,12 +218,13 @@ const IncomeView = () => {
               <option defaultValue=""></option>
               <option value="VCB">Vietcombank</option>
               <option value="SCB">Sacombank</option>
+              <option value="GHTK">GiaoHangTietKiem</option>
               {/* <option value="VTB">Vietinbank</option> */}
             </Form.Control>
             <br />
           </Col>
           <Col className="pr-1" md="2">
-            <label>Ngày Đầu</label>
+            <label>Ngày đầu</label>
             <Form.Control
               type="date"
               onChange={(e) => {
@@ -194,7 +234,7 @@ const IncomeView = () => {
             />
           </Col>
           <Col className="pr-1" md="2">
-            <label>Ngày Cuối</label>
+            <label>Ngày cuối</label>
             <Form.Control
               type="date"
               onChange={(e) => {
@@ -204,7 +244,7 @@ const IncomeView = () => {
             />
           </Col>
           <Col className="pr-1" md="3">
-            <label>Tìm Theo Nội Dung</label>
+            <label>Tìm theo nội dung</label>
             <Form.Control
               type="text"
               onChange={(e) => {
@@ -231,7 +271,6 @@ const IncomeView = () => {
             <br />
           </Col>
         </Row>
-
         <Row>
           <Col className="pr-1" md="3">
             <div className="input-group">
@@ -248,8 +287,9 @@ const IncomeView = () => {
               </div>
             </div>
           </Col>
+
           <Col className="pr-1" md="3">
-            <div>Tổng Số Tiền Thu Được:</div>
+            <div>Tổng số tiền thu được:</div>
             <span
               style={{
                 color: "green",
@@ -260,7 +300,7 @@ const IncomeView = () => {
             </span>
           </Col>
           <Col className="pr-1" md="3">
-            <div>Tổng Số Tiền Chi Ra:</div>
+            <div>Tổng số tiền chi ra:</div>
             <span
               style={{
                 color: "red",
@@ -270,7 +310,8 @@ const IncomeView = () => {
               {Number(expense).toLocaleString("vi-VN")} VND
             </span>
           </Col>
-          <Col className="pr-1" md="3">
+
+          <Col className="" md="3">
             <span>
               <button
                 onClick={handleImport}

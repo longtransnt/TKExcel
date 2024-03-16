@@ -46,7 +46,7 @@ function FilteredList(props) {
           <th scope="col">Ngày</th>
           <th scope="col">Thông Tin</th>
           <th scope="col">Số Tiền</th>
-          <button onClick={exportData} className="btn btn-primary">
+          <button onClick={exportData} className="btn btn-info">
             <i className="fa fa-download" aria-hidden="true"></i>
           </button>
         </tr>
