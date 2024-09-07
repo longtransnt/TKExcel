@@ -142,9 +142,9 @@ const IncomeView = () => {
             value = transaction[4] + "";
             real = parseFloat(value.replaceAll(",", ""));
             // If real value is error, check the negative error
-            if (value === "undefined") {
+            if (value === "") {
               value = transaction[3] + "";
-              real = -1 * parseFloat(value.replaceAll(".", ""));
+              real = -1 * parseFloat(value.replaceAll(",", ""));
             }
             let date_string2 = date_string[0].replaceAll("-", "/");
 
@@ -187,16 +187,13 @@ const IncomeView = () => {
         const ddmmyyyy_date =
           partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
 
-        // console.log(ddmmyyyy_date);
         // Convert timezone before compare
         const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
         if (date1 !== "" && ddmmyyyy_date !== undefined) {
-          console.log(timestamp);
           if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
             // Get value and real value
             value = transaction[3] + "";
             real = parseFloat(value.replaceAll(".", ""));
-            // console.log(value);
             // If real value is error, check the negative error
             if (value === "undefined") {
               value = transaction[2] + "";
@@ -280,7 +277,6 @@ const IncomeView = () => {
           } else if (bankTemp === "ACB") {
             rows.splice(0, 8);
           }
-          // console.log(rows);
           formatTransaction(rows);
 
           // if (bankTemp === "GHTK") {
