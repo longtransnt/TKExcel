@@ -169,6 +169,67 @@ const IncomeView = () => {
             }
           }
         }
+      } else if (bankTemp === "ACB") {
+        /* 0: "Ngày\r\n dd/mm/yyyy"
+        1: "Diễn giải"
+        2: "Ghi nợ"
+        3: "Ghi có"
+        4: "Số dư"
+        */
+        // Get current transaction date
+        let date_string = transaction[0].split(" ");
+        let time_string = transaction[1].split(" ");
+        let time_h = time_string[time_string.length - 1].split(":")[0];
+        let partial_array = date_string[0].split("/");
+
+        if (!isNaN(time_h) && time_h >= 18) partial_array[0] -= 1;
+
+        const ddmmyyyy_date =
+          partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
+
+        // console.log(ddmmyyyy_date);
+        // Convert timezone before compare
+        const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
+        if (date1 !== "" && ddmmyyyy_date !== undefined) {
+          console.log(timestamp);
+          if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
+            // Get value and real value
+            value = transaction[3] + "";
+            real = parseFloat(value.replaceAll(".", ""));
+            // console.log(value);
+            // If real value is error, check the negative error
+            if (value === "undefined") {
+              value = transaction[2] + "";
+              real = -1 * parseFloat(value.replaceAll(".", ""));
+            }
+            let date_string2 =
+              partial_array[0] +
+              "/" +
+              partial_array[1] +
+              "/" +
+              partial_array[2];
+
+            // Push data in data frame
+            expenseList.push({
+              id: transaction[0].index,
+              date: date_string2,
+              content: transaction[1],
+              value: value,
+              real_value: real,
+            });
+
+            if (real > 0) {
+              // Push data export if real value is larger than 0
+              incomeList.push({
+                id: transaction[0].index,
+                date: date_string2,
+                content: transaction[1],
+                value: value,
+                real_value: real,
+              });
+            }
+          }
+        }
       }
       // Count total gain money and output to UI
       if (value !== undefined) {
@@ -215,8 +276,11 @@ const IncomeView = () => {
             // Techcombank
           } else if (bankTemp === "TCB") {
             rows.splice(0, 8);
-            // Techcombank
+            // ACB
+          } else if (bankTemp === "ACB") {
+            rows.splice(0, 8);
           }
+          // console.log(rows);
           formatTransaction(rows);
 
           // if (bankTemp === "GHTK") {
