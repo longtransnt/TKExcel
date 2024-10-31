@@ -79,47 +79,6 @@ const IncomeView = () => {
             }
           }
         }
-      } else if (bankTemp === "SCB") {
-        // Get current transaction date
-        let date_string = transaction[4].split(" ");
-        let partial_array = date_string[0].split("-");
-        const ddmmyyyy_date =
-          partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
-        // Convert timezone before compare
-        const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
-        if (date1 !== "" && ddmmyyyy_date !== undefined) {
-          if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
-            // Get value and real value
-            value = transaction[18] + "";
-            real = parseFloat(value.replaceAll(".", ""));
-            // If real value is error, check the negative error
-            if (value === "undefined") {
-              value = transaction[16] + "";
-              real = -1 * parseFloat(value.replaceAll(".", ""));
-            }
-            let date_string2 = date_string[0].replaceAll("-", "/");
-
-            // Push data in data frame
-            expenseList.push({
-              id: transaction[2],
-              date: date_string2,
-              content: transaction[12],
-              value: value,
-              real_value: real,
-            });
-
-            if (real > 0) {
-              // Push data export if real value is larger than 0
-              incomeList.push({
-                id: transaction[2],
-                date: date_string2,
-                content: transaction[12],
-                value: value,
-                real_value: real,
-              });
-            }
-          }
-        }
       } else if (bankTemp === "TCB") {
         /*
         0: "NGAY"
@@ -147,6 +106,8 @@ const IncomeView = () => {
               real = -1 * parseFloat(value.replaceAll(",", ""));
             }
             let date_string2 = date_string[0].replaceAll("-", "/");
+
+            // console.log(value);
 
             // Push data in data frame
             expenseList.push({
@@ -195,7 +156,7 @@ const IncomeView = () => {
             value = transaction[3] + "";
             real = parseFloat(value.replaceAll(".", ""));
             // If real value is error, check the negative error
-            if (value === "undefined") {
+            if (value === "") {
               value = transaction[2] + "";
               real = -1 * parseFloat(value.replaceAll(".", ""));
             }
@@ -220,7 +181,7 @@ const IncomeView = () => {
               incomeList.push({
                 id: transaction[0].index,
                 date: date_string2,
-                content: transaction[1],
+                content: transaction[[2]],
                 value: value,
                 real_value: real,
               });
@@ -228,6 +189,47 @@ const IncomeView = () => {
           }
         }
       }
+      // else if (bankTemp === "SCB") {
+      //   // Get current transaction date
+      //   let date_string = transaction[4].split(" ");
+      //   let partial_array = date_string[0].split("-");
+      //   const ddmmyyyy_date =
+      //     partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
+      //   // Convert timezone before compare
+      //   const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
+      //   if (date1 !== "" && ddmmyyyy_date !== undefined) {
+      //     if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
+      //       // Get value and real value
+      //       value = transaction[18] + "";
+      //       real = parseFloat(value.replaceAll(".", ""));
+      //       // If real value is error, check the negative error
+      //       if (value === "undefined") {
+      //         value = transaction[16] + "";
+      //         real = -1 * parseFloat(value.replaceAll(".", ""));
+      //       }
+      //       let date_string2 = date_string[0].replaceAll("-", "/");
+
+      //       // Push data in data frame
+      //       expenseList.push({
+      //         id: transaction[2],
+      //         date: date_string2,
+      //         content: transaction[12],
+      //         value: value,
+      //         real_value: real,
+      //       });
+
+      //       if (real > 0) {
+      //         // Push data export if real value is larger than 0
+      //         incomeList.push({
+      //           id: transaction[2],
+      //           date: date_string2,
+      //           content: transaction[12],
+      //           value: value,
+      //           real_value: real,
+      //         });
+      //       }
+      //     }
+      //   }
       // Count total gain money and output to UI
       if (value !== undefined) {
         if (real > 0) income += real;
@@ -268,8 +270,8 @@ const IncomeView = () => {
           if (bankTemp === "VCB") {
             rows.splice(0, 12);
             // Sacombank
-          } else if (bankTemp === "SCB") {
-            rows.splice(0, 24);
+            // } else if (bankTemp === "SCB") {
+            //   rows.splice(0, 24);
             // Techcombank
           } else if (bankTemp === "TCB") {
             rows.splice(0, 8);
@@ -342,11 +344,11 @@ const IncomeView = () => {
                 setBankFormat(e.target.value);
               }}
             >
-              <option defaultValue=""></option>
+              {/* <option defaultValue=""></option> */}
               <option value="VCB">Vietcombank</option>
-              <option value="SCB">Sacombank</option>
               <option value="TCB">Techcombank</option>
               <option value="ACB">ACB</option>
+              {/* <option value="SCB">Sacombank</option> */}
               {/* <option value="GHTK">GiaoHangTietKiem</option> */}
             </Form.Control>
             <br />
