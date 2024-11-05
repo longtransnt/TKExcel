@@ -138,13 +138,9 @@ const IncomeView = () => {
         4: "Số dư"
         */
         // Get current transaction date
-        let date_string = transaction[0].split(" ");
-        let time_string = transaction[1].split(" ");
-        let time_h = time_string[time_string.length - 1].split(":")[0];
+        console.log(transaction);
+        let date_string = transaction[1].split(" ");
         let partial_array = date_string[0].split("/");
-
-        if (!isNaN(time_h) && time_h >= 18) partial_array[0] -= 1;
-
         const ddmmyyyy_date =
           partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
 
@@ -152,12 +148,10 @@ const IncomeView = () => {
         const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
         if (date1 !== "" && ddmmyyyy_date !== undefined) {
           if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
-            // Get value and real value
-            value = transaction[3] + "";
+            value = transaction[6] + "";
             real = parseFloat(value.replaceAll(".", ""));
-            // If real value is error, check the negative error
             if (value === "") {
-              value = transaction[2] + "";
+              value = transaction[5] + "";
               real = -1 * parseFloat(value.replaceAll(".", ""));
             }
             let date_string2 =
@@ -171,7 +165,7 @@ const IncomeView = () => {
             expenseList.push({
               id: transaction[0].index,
               date: date_string2,
-              content: transaction[1],
+              content: transaction[3],
               value: value,
               real_value: real,
             });
@@ -181,7 +175,7 @@ const IncomeView = () => {
               incomeList.push({
                 id: transaction[0].index,
                 date: date_string2,
-                content: transaction[[2]],
+                content: transaction[[3]],
                 value: value,
                 real_value: real,
               });
@@ -345,6 +339,7 @@ const IncomeView = () => {
               }}
             >
               {/* <option defaultValue=""></option> */}
+              <option defaultValue=""></option>
               <option value="VCB">Vietcombank</option>
               <option value="TCB">Techcombank</option>
               <option value="ACB">ACB</option>
