@@ -62,10 +62,10 @@ function FilteredList(props) {
               <td>
                 {transaction.real_value < 0 ? (
                   <span className="badge bg-danger text-white">
-                    - {transaction.value}
+                    {transaction.value}
                   </span>
                 ) : (
-                  <span className="badge bg-info text-white">
+                  <span className="badge bg-success text-white">
                     {transaction.value}
                   </span>
                 )}
