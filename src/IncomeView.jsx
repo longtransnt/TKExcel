@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { read, utils } from "xlsx";
-import * as XLSX from "xlsx";
 import { Form, Container, Row, Col } from "react-bootstrap";
 import FilteredList from "./FilteredList";
 
@@ -15,7 +14,6 @@ const IncomeView = () => {
   const [bankTemp, setBankFormat] = useState("");
   const [transacType, setTransacType] = useState("");
   const [currentFile, setCurrentFile] = useState(null);
-  // const [deliveryList, setDeliveryList] = useState([]);
 
   // Function to handle transactions data from xlsx file
   const formatTransaction = (transactions) => {
@@ -32,13 +30,6 @@ const IncomeView = () => {
       let value = "";
       let real = 0;
       if (bankTemp === "VCB") {
-        //     null,
-        //     "STT\nNo.",
-        //     "Ngày/\nTNX Date/ Số CT/ Doc No",
-        //     "Số tiền ghi nợ/\nDebit",
-        //     "Số tiền ghi có/\nCredit",
-        //     "Số dư/\nBalance",
-        //     "Nội dung chi tiết/\nTransactions in detail"
         if (+transaction[1]) {
           const day_array = transaction[2].split("\n");
           const partial_array = day_array[0].split("/");
@@ -80,15 +71,6 @@ const IncomeView = () => {
           }
         }
       } else if (bankTemp === "TCB") {
-        /*
-        0: "NGAY"
-        1: "DIEN GIAI"
-        2: "CHI TIET"
-        3: "NO"
-        4: "CO"
-        5: "SO DU"
-        */
-        // Get current transaction date
         let date_string = transaction[0].split(" ");
         let partial_array = date_string[0].split("/");
         const ddmmyyyy_date =
@@ -106,9 +88,6 @@ const IncomeView = () => {
               real = -1 * parseFloat(value.replaceAll(",", ""));
             }
             let date_string2 = date_string[0].replaceAll("-", "/");
-
-            // console.log(value);
-
             // Push data in data frame
             expenseList.push({
               id: transaction[2],
@@ -131,14 +110,6 @@ const IncomeView = () => {
           }
         }
       } else if (bankTemp === "ACB") {
-        /* 0: "Ngày\r\n dd/mm/yyyy"
-        1: "Diễn giải"
-        2: "Ghi nợ"
-        3: "Ghi có"
-        4: "Số dư"
-        */
-        // Get current transaction date
-        console.log(transaction);
         let date_string = transaction[1].split(" ");
         let partial_array = date_string[0].split("/");
         const ddmmyyyy_date =
@@ -182,48 +153,51 @@ const IncomeView = () => {
             }
           }
         }
+      } else if (bankTemp === "VTB") {
+        let date_string = transaction[1].split(" ");
+        let partial_array = date_string[0].split("-");
+        const ddmmyyyy_date =
+          partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
+
+        // Convert timezone before compare
+        const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
+        if (date1 !== "" && ddmmyyyy_date !== undefined) {
+          if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
+            value = transaction[4] + "";
+            real = parseFloat(value.replaceAll(".", ""));
+            if (value === "") {
+              value = transaction[3] + "";
+              real = -1 * parseFloat(value.replaceAll(".", ""));
+            }
+            let date_string2 =
+              partial_array[0] +
+              "/" +
+              partial_array[1] +
+              "/" +
+              partial_array[2];
+
+            // Push data in data frame
+            expenseList.push({
+              id: transaction[0].index,
+              date: date_string2,
+              content: transaction[2],
+              value: value,
+              real_value: real,
+            });
+
+            if (real > 0) {
+              // Push data export if real value is larger than 0
+              incomeList.push({
+                id: transaction[0].index,
+                date: date_string2,
+                content: transaction[[3]],
+                value: value,
+                real_value: real,
+              });
+            }
+          }
+        }
       }
-      // else if (bankTemp === "SCB") {
-      //   // Get current transaction date
-      //   let date_string = transaction[4].split(" ");
-      //   let partial_array = date_string[0].split("-");
-      //   const ddmmyyyy_date =
-      //     partial_array[1] + "/" + partial_array[0] + "/" + partial_array[2];
-      //   // Convert timezone before compare
-      //   const timestamp = new Date(ddmmyyyy_date).getTime() + 7 * 3600000;
-      //   if (date1 !== "" && ddmmyyyy_date !== undefined) {
-      //     if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
-      //       // Get value and real value
-      //       value = transaction[18] + "";
-      //       real = parseFloat(value.replaceAll(".", ""));
-      //       // If real value is error, check the negative error
-      //       if (value === "undefined") {
-      //         value = transaction[16] + "";
-      //         real = -1 * parseFloat(value.replaceAll(".", ""));
-      //       }
-      //       let date_string2 = date_string[0].replaceAll("-", "/");
-
-      //       // Push data in data frame
-      //       expenseList.push({
-      //         id: transaction[2],
-      //         date: date_string2,
-      //         content: transaction[12],
-      //         value: value,
-      //         real_value: real,
-      //       });
-
-      //       if (real > 0) {
-      //         // Push data export if real value is larger than 0
-      //         incomeList.push({
-      //           id: transaction[2],
-      //           date: date_string2,
-      //           content: transaction[12],
-      //           value: value,
-      //           real_value: real,
-      //         });
-      //       }
-      //     }
-      //   }
       // Count total gain money and output to UI
       if (value !== undefined) {
         if (real > 0) income += real;
@@ -260,25 +234,20 @@ const IncomeView = () => {
           const rows = utils.sheet_to_json(wb.Sheets[sheets[0]], {
             header: 1,
           });
-          // Vietcombank
+          // VietcomBank
           if (bankTemp === "VCB") {
             rows.splice(0, 12);
-            // Sacombank
-            // } else if (bankTemp === "SCB") {
-            //   rows.splice(0, 24);
-            // Techcombank
+            // TechcomBank
           } else if (bankTemp === "TCB") {
             rows.splice(0, 8);
             // ACB
           } else if (bankTemp === "ACB") {
             rows.splice(0, 8);
+            // VietinBank
+          } else if (bankTemp === "VTB") {
+            rows.splice(0, 25);
           }
           formatTransaction(rows);
-
-          // if (bankTemp === "GHTK") {
-          //   rows.splice(0, 5);
-          //   formatDelivery(rows);
-          // }
         }
       };
       reader.readAsArrayBuffer(file);
@@ -293,38 +262,6 @@ const IncomeView = () => {
     setExpense(newExp);
   };
 
-  // const formatDelivery = (transactions) => {
-  //   const now = new Date();
-  //   const timestamp = now.toLocaleString("vi-VN");
-  //   transactions.forEach(function (transaction) {
-  //     var delivery = transaction["__EMPTY_1"].split(".");
-  //     var customer = transaction["__EMPTY_5"].split("-");
-  //     const customer_name = customer[0];
-  //     const address = customer[1];
-  //     const phone = transaction["__EMPTY_24"];
-  //     const money_cod = transaction["__EMPTY_8"];
-  //     const delivery_code = delivery[delivery.length - 1];
-  //     const phone2 = phone;
-  //     const delivery_code2 = delivery_code;
-  //     const url = "https://i.ghtk.vn/" + delivery_code;
-  //     deliveryList.push({
-  //       phone,
-  //       customer_name,
-  //       delivery_code,
-  //       phone2,
-  //       money_cod,
-  //       address,
-  //       delivery_code2,
-  //       url,
-  //     });
-  //   });
-
-  //   const worksheet = XLSX.utils.json_to_sheet(deliveryList);
-  //   const workbook = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(workbook, worksheet, "GHTK");
-  //   XLSX.writeFile(workbook, "GHTK_Ship_" + timestamp + ".xlsx");
-  // };
-
   return (
     <>
       <Container fluid>
@@ -338,13 +275,11 @@ const IncomeView = () => {
                 setBankFormat(e.target.value);
               }}
             >
-              {/* <option defaultValue=""></option> */}
               <option defaultValue=""></option>
-              <option value="VCB">Vietcombank</option>
-              <option value="TCB">Techcombank</option>
+              <option value="VCB">VietcomBank</option>
+              <option value="TCB">TechcomBank</option>
               <option value="ACB">ACB</option>
-              {/* <option value="SCB">Sacombank</option> */}
-              {/* <option value="GHTK">GiaoHangTietKiem</option> */}
+              <option value="VTB">VietinBank</option>
             </Form.Control>
             <br />
           </Col>
