@@ -57,15 +57,15 @@ function FilteredList(props) {
             <tr key={index}>
               <th scope="row">{index + 1}</th>
               <td>{transaction.date}</td>
-              <td>{transaction.content}</td>
+              <td className="text-start">{transaction.content}</td>
 
-              <td>
+              <td className="text-end">
                 {transaction.real_value < 0 ? (
-                  <span className="badge bg-danger text-white">
+                  <span className="text-right badge bg-danger text-white">
                     {transaction.value}
                   </span>
                 ) : (
-                  <span className="badge bg-success text-white">
+                  <span className="text-right badge bg-success text-white">
                     {transaction.value}
                   </span>
                 )}

@@ -54,6 +54,7 @@ const IncomeView = () => {
         date: datePart.replaceAll("-", "/"),
         dateForFilter,
         content: transaction[1],
+        receiver: transaction[8],
         value: formatValue(real),
         real_value: real,
       };
@@ -91,7 +92,9 @@ const IncomeView = () => {
         id: transaction[0].index,
         date: `${parts[0]}/${parts[1]}/${parts[2]}`,
         dateForFilter,
-        content: transaction[2],
+        content:
+          transaction[2] +
+          (transaction[8] !== undefined ? " - " + transaction[8] : ""),
         value: formatValue(real),
         real_value: real,
       };
@@ -112,6 +115,7 @@ const IncomeView = () => {
     if (!parser) return;
 
     transactions.forEach((transaction) => {
+      console.log(transaction);
       const result = parser(transaction);
       if (!result) return;
       const timestamp = new Date(result.dateForFilter).getTime() + 7 * 3600000;
