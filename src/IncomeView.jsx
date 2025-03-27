@@ -32,11 +32,12 @@ const IncomeView = () => {
       }
       return {
         id: transaction[1],
-        date: rawDate,
         dateForFilter,
-        content: transaction[6],
         value: formatValue(real),
+        date: rawDate,
+        content: transaction[6],
         real_value: real,
+        numeric_value: real / 1000,
       };
     },
     TCB: (transaction) => {
@@ -51,12 +52,12 @@ const IncomeView = () => {
       }
       return {
         id: transaction[2],
-        date: datePart.replaceAll("-", "/"),
         dateForFilter,
-        content: transaction[1],
-        receiver: transaction[8],
         value: formatValue(real),
+        date: datePart.replaceAll("-", "/"),
+        content: transaction[1],
         real_value: real,
+        numeric_value: real / 1000,
       };
     },
     ACB: (transaction) => {
@@ -71,11 +72,12 @@ const IncomeView = () => {
       }
       return {
         id: transaction[0].index,
-        date: `${parts[0]}/${parts[1]}/${parts[2]}`,
         dateForFilter,
-        content: transaction[3],
         value: formatValue(real),
+        date: `${parts[0]}/${parts[1]}/${parts[2]}`,
+        content: transaction[3],
         real_value: real,
+        numeric_value: real / 1000,
       };
     },
     VTB: (transaction) => {
@@ -90,13 +92,14 @@ const IncomeView = () => {
       }
       return {
         id: transaction[0].index,
-        date: `${parts[0]}/${parts[1]}/${parts[2]}`,
         dateForFilter,
+        value: formatValue(real),
+        date: `${parts[0]}/${parts[1]}/${parts[2]}`,
         content:
           transaction[2] +
           (transaction[8] !== undefined ? " - " + transaction[8] : ""),
-        value: formatValue(real),
         real_value: real,
+        numeric_value: real / 1000,
       };
     },
   };
