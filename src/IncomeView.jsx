@@ -95,11 +95,10 @@ const IncomeView = () => {
         dateForFilter,
         value: formatValue(real),
         date: `${parts[0]}/${parts[1]}/${parts[2]}`,
-        content:
-          transaction[2] +
-          (transaction[8] !== undefined ? " - " + transaction[8] : ""),
+        content: transaction[2],
         real_value: real,
         numeric_value: real / 1000,
+        name: transaction[8] !== undefined ? transaction[8] : "",
       };
     },
   };
