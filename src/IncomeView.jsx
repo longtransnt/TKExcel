@@ -81,11 +81,12 @@ const IncomeView = () => {
       };
     },
     VTB: (transaction) => {
+      if (transaction.length == 1) return;
       const datePart = transaction[1].split(" ")[0];
-      const parts = datePart.split("-");
+      const parts = datePart.split("/");
       const dateForFilter = `${parts[1]}/${parts[0]}/${parts[2]}`;
-      let value = transaction[4] + "";
-      let real = parseFloat(value.replaceAll(".", ""));
+      let value = transaction[3] + "";
+      let real = parseFloat(value.replaceAll(",", ""));
       if (value === "0") {
         value = transaction[3] + "";
         real = -1 * parseFloat(value.replaceAll(".", ""));
@@ -117,7 +118,6 @@ const IncomeView = () => {
     if (!parser) return;
 
     transactions.forEach((transaction) => {
-      console.log(transaction);
       const result = parser(transaction);
       if (!result) return;
       const timestamp = new Date(result.dateForFilter).getTime() + 7 * 3600000;
@@ -150,7 +150,7 @@ const IncomeView = () => {
         const sheets = wb.SheetNames;
         if (sheets.length) {
           const rows = utils.sheet_to_json(wb.Sheets[sheets[0]], { header: 1 });
-          const skipRows = { VCB: 12, TCB: 8, ACB: 8, VTB: 25 };
+          const skipRows = { VCB: 12, TCB: 8, ACB: 8, VTB: 6 };
           if (skipRows[bankTemp]) rows.splice(0, skipRows[bankTemp]);
           formatTransaction(rows);
         }
