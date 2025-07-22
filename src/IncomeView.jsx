@@ -64,10 +64,10 @@ const IncomeView = () => {
       const datePart = transaction[1].split(" ")[0];
       const parts = datePart.split("/");
       const dateForFilter = `${parts[1]}/${parts[0]}/${parts[2]}`;
-      let value = transaction[6] + "";
+      let value = transaction[5] + "";
       let real = parseFloat(value.replaceAll(".", ""));
       if (value === "") {
-        value = transaction[5] + "";
+        value = transaction[4] + "";
         real = -1 * parseFloat(value.replaceAll(".", ""));
       }
       return {
