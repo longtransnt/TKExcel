@@ -44,8 +44,8 @@ function FilteredList(props) {
         <tr>
           <th scope="col">STT</th>
           <th scope="col">Ngày</th>
-          <th scope="col">Thông Tin</th>
           <th scope="col">Số Tiền</th>
+          <th scope="col">Thông Tin</th>
           <button onClick={exportData} className="btn btn-info">
             <i className="fa fa-download" aria-hidden="true"></i>
           </button>
@@ -57,8 +57,6 @@ function FilteredList(props) {
             <tr key={index}>
               <th scope="row">{index + 1}</th>
               <td>{transaction.date}</td>
-              <td className="text-start">{transaction.content}</td>
-
               <td className="text-end">
                 {transaction.real_value < 0 ? (
                   <span className="text-right badge bg-danger text-white">
@@ -70,6 +68,7 @@ function FilteredList(props) {
                   </span>
                 )}
               </td>
+              <td className="text-start">{transaction.content}</td>
             </tr>
           ))
         ) : (
