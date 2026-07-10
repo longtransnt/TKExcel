@@ -14,10 +14,20 @@ function FilteredList(props) {
   });
 
   const contentFilteredData = typeFilteredData.filter((el) => {
-    if (props.input === "") {
-      return el;
+    const content = el.content.toLowerCase();
+    const inputKeyword = props.input.toLowerCase();
+    const ignoredKeyword = props.ignored.toLowerCase();
+
+    if (inputKeyword === "" && ignoredKeyword === "") {
+      return true;
+    } else if (inputKeyword === "") {
+      return !content.includes(ignoredKeyword);
+    } else if (ignoredKeyword === "") {
+      return content.includes(inputKeyword);
     } else {
-      return el.content.toLowerCase().includes(props.input);
+      return (
+        content.includes(inputKeyword) && !content.includes(ignoredKeyword)
+      );
     }
   });
 

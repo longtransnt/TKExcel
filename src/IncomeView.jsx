@@ -8,6 +8,7 @@ const IncomeView = () => {
   const [date1, setDate1] = useState("");
   const [date2, setDate2] = useState("");
   const [searchTxt, setSearchTxt] = useState("");
+  const [ignoreTxt, setIgnoreTxt] = useState("");
   const [add, setAdd] = useState(0);
   const [expense, setExpense] = useState(0);
   const [bankTemp, setBankFormat] = useState("");
@@ -181,7 +182,6 @@ const IncomeView = () => {
             <option value="VCB">VietcomBank</option>
             <option value="TCB">TechcomBank</option>
           </Form.Control>
-          <br />
         </Col>
         <Col className="pr-1" md="2">
           <label>Ngày đầu</label>
@@ -199,15 +199,7 @@ const IncomeView = () => {
             value={date2}
           />
         </Col>
-        <Col className="pr-1" md="3">
-          <label>Tìm theo nội dung</label>
-          <Form.Control
-            type="text"
-            onChange={(e) => setSearchTxt(e.target.value.toLowerCase())}
-            value={searchTxt}
-          />
-        </Col>
-        <Col md="2">
+        <Col md="3">
           <label>Loại giao dịch</label>
           <Form.Control
             as="select"
@@ -218,9 +210,26 @@ const IncomeView = () => {
             <option value="Add">Tiền vào</option>
             <option value="Exp">Tiền ra</option>
           </Form.Control>
-          <br />
+        </Col>
+
+        <Col className="pr-1" md="3">
+          <label>Tìm theo từ khoá</label>
+          <Form.Control
+            type="text"
+            onChange={(e) => setSearchTxt(e.target.value.toLowerCase())}
+            value={searchTxt}
+          />
+        </Col>
+        <Col className="pr-1" md="3">
+          <label>Bỏ qua từ khoá</label>
+          <Form.Control
+            type="text"
+            onChange={(e) => setIgnoreTxt(e.target.value.toLowerCase())}
+            value={ignoreTxt}
+          />
         </Col>
       </Row>
+      <br />
       <Row>
         <Col className="pr-1" md="3">
           <div className="input-group">
@@ -265,6 +274,7 @@ const IncomeView = () => {
               <FilteredList
                 data={data}
                 input={searchTxt}
+                ignored={ignoreTxt}
                 bankTemp={bankTemp}
                 updateExpense={updateExpense}
                 updateAdd={updateAdd}
