@@ -14,11 +14,10 @@ const IncomeView = () => {
   const [bankTemp, setBankFormat] = useState("");
   const [transacType, setTransacType] = useState("");
   const [currentFile, setCurrentFile] = useState(null);
+  const [numericTotal, setNumericTotal] = useState(0);
 
-  // Helper to format values consistently
   const formatValue = (num) => Number(num).toLocaleString("en-US");
 
-  // Bank-specific parsers using formatValue for all banks
   const bankParsers = {
     VCB: (transaction) => {
       if (!+transaction[1]) return null;
@@ -38,7 +37,7 @@ const IncomeView = () => {
         date: rawDate,
         content: transaction[6],
         real_value: real,
-        numeric_value: real / 1000,
+        numeric_value: real,
       };
     },
     TCB: (transaction) => {
@@ -58,7 +57,7 @@ const IncomeView = () => {
         date: datePart.replaceAll("-", "/"),
         content: transaction[1],
         real_value: real,
-        numeric_value: real / 1000,
+        numeric_value: real,
       };
     },
     ACB: (transaction) => {
@@ -78,11 +77,11 @@ const IncomeView = () => {
         date: `${parts[0]}/${parts[1]}/${parts[2]}`,
         content: transaction[3],
         real_value: real,
-        numeric_value: real / 1000,
+        numeric_value: real,
       };
     },
     VTB: (transaction) => {
-      if (transaction.length == 1) return;
+      if (transaction.length == 1) return null;
       const datePart = transaction[1].split(" ")[0];
       const parts = datePart.split("/");
       const dateForFilter = `${parts[1]}/${parts[0]}/${parts[2]}`;
@@ -99,7 +98,7 @@ const IncomeView = () => {
         date: `${parts[0]}/${parts[1]}/${parts[2]}`,
         content: transaction[2],
         real_value: real,
-        numeric_value: real / 1000,
+        numeric_value: real,
         name: transaction[8] !== undefined ? transaction[8] : "",
       };
     },
@@ -107,25 +106,30 @@ const IncomeView = () => {
 
   const formatTransaction = (transactions) => {
     let expenseList = [];
-    let incomeList = [];
     let income = 0;
     let expense = 0;
 
     const timestamp_start = new Date(date1).getTime();
     if (date2 === "") setDate2(date1);
-    const timestamp_end = new Date(date2).getTime();
+    const timestamp_end = new Date(date2 || date1).getTime();
 
     const parser = bankParsers[bankTemp];
     if (!parser) return;
 
-    transactions.forEach((transaction) => {
+    transactions.forEach((transaction, rowIndex) => {
       const result = parser(transaction);
       if (!result) return;
+
       const timestamp = new Date(result.dateForFilter).getTime() + 7 * 3600000;
       if (timestamp_start <= timestamp && timestamp <= timestamp_end) {
+        // Keep a stable row key and separate the optional override from the default.
+        result.rowId = `${bankTemp}-${rowIndex}`;
+        result.category = "";
+        result.numeric_value_default = result.numeric_value;
+        result.numeric_value_override = "";
         expenseList.push(result);
+
         if (result.real_value > 0) {
-          incomeList.push(result);
           income += result.real_value;
         } else {
           expense += result.real_value;
@@ -133,10 +137,6 @@ const IncomeView = () => {
       }
     });
 
-    incomeList.push({
-      value: "Tổng Tiền",
-      real_value: income,
-    });
     setData(expenseList);
     setAdd(income);
     setExpense(expense);
@@ -161,8 +161,31 @@ const IncomeView = () => {
   };
 
   const handleFileChange = (e) => setCurrentFile(e.target.files);
-  const deleteRows = (rowsToDelete) =>
-    setData(data.filter((_, index) => !rowsToDelete.includes(index)));
+
+  const updateTransaction = (rowId, field, value) => {
+    setData((previousData) =>
+      previousData.map((transaction) => {
+        if (transaction.rowId !== rowId) return transaction;
+
+        if (field === "numeric_value_override") {
+          const trimmedValue = value.trim();
+          const effectiveValue =
+            trimmedValue === ""
+              ? transaction.numeric_value_default
+              : Number(trimmedValue);
+
+          return {
+            ...transaction,
+            numeric_value_override: value,
+            numeric_value: effectiveValue,
+          };
+        }
+
+        return { ...transaction, [field]: value };
+      }),
+    );
+  };
+
   const updateAdd = (newAdd) => setAdd(newAdd);
   const updateExpense = (newExp) => setExpense(newExp);
 
@@ -176,7 +199,7 @@ const IncomeView = () => {
             value={bankTemp}
             onChange={(e) => setBankFormat(e.target.value)}
           >
-            <option defaultValue=""></option>
+            <option value=""></option>
             <option value="ACB">ACB</option>
             <option value="VTB">VietinBank</option>
             <option value="VCB">VietcomBank</option>
@@ -206,12 +229,11 @@ const IncomeView = () => {
             value={transacType}
             onChange={(e) => setTransacType(e.target.value)}
           >
-            <option defaultValue=""></option>
+            <option value=""></option>
             <option value="Add">Tiền vào</option>
             <option value="Exp">Tiền ra</option>
           </Form.Control>
         </Col>
-
         <Col className="pr-1" md="3">
           <label>Tìm theo từ khoá</label>
           <Form.Control
@@ -229,7 +251,9 @@ const IncomeView = () => {
           />
         </Col>
       </Row>
+
       <br />
+
       <Row>
         <Col className="pr-1" md="3">
           <div className="input-group">
@@ -246,16 +270,22 @@ const IncomeView = () => {
             </div>
           </div>
         </Col>
-        <Col className="pr-1" md="3">
+        <Col className="pr-1" md="2">
           <div>Tổng số tiền thu được:</div>
           <span style={{ color: "green", fontWeight: "bold" }}>
-            {Number(add).toLocaleString("vi-VN")} VND
+            {Number(add).toLocaleString("vi-VN")} đ
           </span>
         </Col>
-        <Col className="pr-1" md="3">
+        <Col className="pr-1" md="2">
           <div>Tổng số tiền chi ra:</div>
           <span style={{ color: "red", fontWeight: "bold" }}>
-            {Number(expense).toLocaleString("vi-VN")} VND
+            {Number(expense).toLocaleString("vi-VN")} đ
+          </span>
+        </Col>
+        <Col className="pr-1" md="2">
+          <div>Total Numeric Value:</div>
+          <span style={{ color: "blue", fontWeight: "bold" }}>
+            {Number(numericTotal).toLocaleString("vi-VN")} đ
           </span>
         </Col>
         <Col md="3">
@@ -267,6 +297,7 @@ const IncomeView = () => {
           </button>
         </Col>
       </Row>
+
       <Row>
         <div className="row">
           <div className="col-sm-12">
@@ -279,6 +310,8 @@ const IncomeView = () => {
                 updateExpense={updateExpense}
                 updateAdd={updateAdd}
                 type={transacType}
+                updateTransaction={updateTransaction}
+                updateNumericTotal={setNumericTotal}
               />
             </table>
           </div>
