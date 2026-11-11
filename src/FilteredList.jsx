@@ -100,7 +100,13 @@ function FilteredList(props) {
               <td className="text-start w-50 mx-auto">{transaction.content}</td>
               <td>
                 <select
-                  className="form-control form-control-sm"
+                  className={`form-control form-control-sm font-weight-bold ${
+                    transaction.category === "Partial"
+                      ? "text-warning"
+                      : transaction.category === "Whole"
+                        ? "text-success"
+                        : ""
+                  }`}
                   value={transaction.category || ""}
                   disabled={transaction.real_value <= 0}
                   onChange={(e) =>
@@ -111,9 +117,9 @@ function FilteredList(props) {
                     )
                   }
                 >
-                  <option value="">Select</option>
-                  <option value="Partial">Partial</option>
-                  <option value="Whole">Whole</option>
+                  <option value=""></option>
+                  <option value="Whole">WHOLE</option>
+                  <option value="Partial">PARTIAL</option>
                 </select>
               </td>
               <td className="text-start">
