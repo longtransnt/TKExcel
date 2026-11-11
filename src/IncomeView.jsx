@@ -206,7 +206,7 @@ const IncomeView = () => {
             <option value="TCB">TechcomBank</option>
           </Form.Control>
         </Col>
-        <Col className="pr-1" md="2">
+        <Col className="pr-1" md="3">
           <label>Ngày đầu</label>
           <Form.Control
             type="date"
@@ -214,7 +214,7 @@ const IncomeView = () => {
             value={date1}
           />
         </Col>
-        <Col className="pr-1" md="2">
+        <Col className="pr-1" md="3">
           <label>Ngày cuối</label>
           <Form.Control
             type="date"
@@ -222,7 +222,7 @@ const IncomeView = () => {
             value={date2}
           />
         </Col>
-        <Col md="3">
+        <Col md="2">
           <label>Loại giao dịch</label>
           <Form.Control
             as="select"
@@ -234,64 +234,68 @@ const IncomeView = () => {
             <option value="Exp">Tiền ra</option>
           </Form.Control>
         </Col>
-        <Col className="pr-1" md="3">
-          <label>Tìm theo từ khoá</label>
-          <Form.Control
-            type="text"
-            onChange={(e) => setSearchTxt(e.target.value.toLowerCase())}
-            value={searchTxt}
-          />
-        </Col>
-        <Col className="pr-1" md="3">
-          <label>Bỏ qua từ khoá</label>
-          <Form.Control
-            type="text"
-            onChange={(e) => setIgnoreTxt(e.target.value.toLowerCase())}
-            value={ignoreTxt}
-          />
-        </Col>
-      </Row>
-
-      <br />
-
-      <Row>
-        <Col className="pr-1" md="3">
-          <div className="input-group">
-            <div className="custom-file">
-              <input
-                type="file"
-                name="file"
-                className="custom-file-input"
-                id="inputGroupFile"
-                required
-                onChange={handleFileChange}
-                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-              />
+        <br />
+        <Row>
+          <Col className="pr-1" md="5">
+            <br />
+            <br />
+            <div className="input-group">
+              <div className="custom-file">
+                <input
+                  type="file"
+                  name="file"
+                  className="custom-file-input"
+                  id="inputGroupFile"
+                  required
+                  onChange={handleFileChange}
+                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                />
+              </div>
             </div>
-          </div>
-        </Col>
+          </Col>
+          <Col className="pr-1" md="3">
+            <label>Tìm theo từ khoá</label>
+            <Form.Control
+              type="text"
+              onChange={(e) => setSearchTxt(e.target.value.toLowerCase())}
+              value={searchTxt}
+            />
+          </Col>
+          <Col className="pr-1" md="3">
+            <label>Bỏ qua từ khoá</label>
+            <Form.Control
+              type="text"
+              onChange={(e) => setIgnoreTxt(e.target.value.toLowerCase())}
+              value={ignoreTxt}
+            />
+          </Col>
+        </Row>
+      </Row>
+      <br />
+      <Row>
+        <Col className="pr-1" md="3" />
         <Col className="pr-1" md="2">
-          <div>Tổng số tiền thu được:</div>
+          <div>Tổng tiền gửi vào:</div>
           <span style={{ color: "green", fontWeight: "bold" }}>
             {Number(add).toLocaleString("vi-VN")} đ
           </span>
         </Col>
         <Col className="pr-1" md="2">
-          <div>Tổng số tiền chi ra:</div>
+          <div>Tổng tiền rút ra:</div>
           <span style={{ color: "red", fontWeight: "bold" }}>
             {Number(expense).toLocaleString("vi-VN")} đ
           </span>
         </Col>
         <Col className="pr-1" md="2">
-          <div>Total Numeric Value:</div>
+          <div>Tổng tiền giao dịch:</div>
           <span style={{ color: "blue", fontWeight: "bold" }}>
             {Number(numericTotal).toLocaleString("vi-VN")} đ
           </span>
         </Col>
-        <Col md="3">
+        <Col className="pr-1" md="2">
           <button
             onClick={handleImport}
-            className="btn btn-primary float-right"
+            className="btn btn-primary float-right mt-1"
           >
             Tải lại <i className="fa fa-refresh"></i>
           </button>

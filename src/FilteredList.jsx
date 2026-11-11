@@ -10,6 +10,15 @@ function FilteredList(props) {
     return el.real_value < 0;
   });
 
+  const copyContent = async (content) => {
+    try {
+      await navigator.clipboard.writeText(content || "");
+    } catch (error) {
+      console.error("Failed to copy content:", error);
+      alert("Unable to copy content. Please check browser permissions.");
+    }
+  };
+
   const contentFilteredData = typeFilteredData.filter((el) => {
     const content = (el.content || "").toLowerCase();
     const inputKeyword = props.input.toLowerCase();
@@ -62,8 +71,8 @@ function FilteredList(props) {
           <th scope="col">Ngày</th>
           <th scope="col">Số Tiền</th>
           <th scope="col">Thông Tin</th>
-          <th scope="col">Type</th>
-          <th scope="col">Numeric Value</th>
+          <th scope="col">Trả Tiền </th>
+          <th scope="col">Tiền Giao Dịch</th>
           <th scope="col">
             <button onClick={exportData} className="btn btn-info">
               <i className="fa fa-download" aria-hidden="true"></i>
@@ -88,7 +97,7 @@ function FilteredList(props) {
                   </span>
                 )}
               </td>
-              <td className="text-start">{transaction.content}</td>
+              <td className="text-start w-50 mx-auto">{transaction.content}</td>
               <td>
                 <select
                   className="form-control form-control-sm"
@@ -102,20 +111,20 @@ function FilteredList(props) {
                     )
                   }
                 >
-                  <option value="">Select type</option>
-                  <option value="Whole">Whole</option>
+                  <option value="">Select</option>
                   <option value="Partial">Partial</option>
-                  <option value="Cash">Cash</option>
+                  <option value="Whole">Whole</option>
                 </select>
               </td>
-              <td>
+              <td className="text-start">
                 <input
                   type="number"
                   step="any"
-                  className="form-control form-control-sm"
+                  className="form-control form-control-sm w-75"
                   value={transaction.numeric_value_override ?? ""}
                   placeholder={`${transaction.numeric_value_default}`}
                   disabled={
+                    transaction.category === "" ||
                     transaction.category === "Whole" ||
                     transaction.real_value <= 0
                   }
@@ -128,7 +137,16 @@ function FilteredList(props) {
                   }
                 />
               </td>
-              <td></td>
+              <td>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary ml-2 mb-3"
+                  onClick={() => copyContent(transaction.content)}
+                  title="Copy content"
+                >
+                  <i className="fa fa-copy" aria-hidden="true"></i>
+                </button>
+              </td>
             </tr>
           ))
         ) : (
