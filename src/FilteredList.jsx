@@ -135,8 +135,7 @@ function FilteredList(props) {
                   placeholder={`${transaction.numeric_value_default}`}
                   disabled={
                     transaction.category === "" ||
-                    transaction.category === "Whole" ||
-                    transaction.real_value <= 0
+                    transaction.category === "Whole"
                   }
                   onChange={(e) =>
                     props.updateTransaction(
