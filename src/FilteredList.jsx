@@ -19,6 +19,10 @@ function FilteredList(props) {
     }
   };
 
+  const extractID = (content) => {
+    const match = content?.match(/\bN\d{11}\b/);
+    return match ? match[0] : "";
+  };
   const contentFilteredData = typeFilteredData.filter((el) => {
     const content = (el.content || "").toLowerCase();
     const inputKeyword = props.input.toLowerCase();
@@ -144,14 +148,26 @@ function FilteredList(props) {
                 />
               </td>
               <td>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-secondary ml-2 mb-3"
-                  onClick={() => copyContent(transaction.content)}
-                  title="Copy content"
-                >
-                  <i className="fa fa-copy" aria-hidden="true"></i>
-                </button>
+                <div className="d-flex align-items-center">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary mb-3"
+                    onClick={() => copyContent(transaction.content)}
+                    title="Copy content"
+                  >
+                    <i className="fa fa-copy" aria-hidden="true"></i>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary ms-1 mb-3"
+                    onClick={() => copyContent(extractID(transaction.content))}
+                    disabled={!extractID(transaction.content)}
+                    title="Copy ID"
+                  >
+                    <i className="fa fa-id-card" aria-hidden="true"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           ))
